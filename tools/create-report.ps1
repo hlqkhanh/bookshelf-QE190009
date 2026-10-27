@@ -27,8 +27,8 @@ try {
     "Firebase Project ID: $($data.firebaseProjectId)", "Test account email: $($data.testEmail)",
     "Test account password: $($data.testPassword)")) { $body += Paragraph $line }
   $body += '</w:tc></w:tr></w:tbl><w:p/>'
-  if (!$data.screenshots -or $data.screenshots.Count -eq 0) {
-    $body += Paragraph 'DRAFT - Chua co anh chup thuc te. Chua du dieu kien nop bai.'
+  if (!$data.screenshots -or $data.screenshots.Count -lt 22 -or ($data | ConvertTo-Json -Depth 5) -match 'REPLACE_') {
+    $body += Paragraph 'DRAFT - Chua du anh chup thuc te hoac thong tin. Chua du dieu kien nop bai.'
   }
   $rels = '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
   $types = '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'

@@ -34,6 +34,25 @@ void main() {
     }
 
     Future<void> tap(Finder finder) async {
+      if (finder.evaluate().isEmpty &&
+          find.byType(ListView).evaluate().isNotEmpty) {
+        final scrollable = find
+            .descendant(
+              of: find.byType(ListView).first,
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+        await tester.pumpAndSettle();
+        if (finder.evaluate().isEmpty) {
+          await tester.scrollUntilVisible(
+            finder,
+            250,
+            scrollable: scrollable,
+            maxScrolls: 30,
+          );
+        }
+      }
       await tester.ensureVisible(finder);
       await tester.pumpAndSettle();
       await tester.tap(finder);
@@ -42,7 +61,7 @@ void main() {
 
     Future<void> shot(String name) async {
       FocusManager.instance.primaryFocus?.unfocus();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
       await binding.takeScreenshot(name);
     }
 
@@ -52,7 +71,7 @@ void main() {
       await tester.enterText(find.byType(TextFormField).at(0), userEmail);
       await tester.enterText(find.byType(TextFormField).at(1), password);
       await tap(button('Login'));
-      await until(find.text('Your private library'));
+      await until(find.text('List'));
     }
 
     Finder select(String label) => find.ancestor(
@@ -65,8 +84,19 @@ void main() {
     }
 
     Future<void> listBottom() async {
-      await tester.drag(find.byType(ListView).first, const Offset(0, -1800));
-      await tester.pumpAndSettle();
+      final scroll = tester.state<ScrollableState>(
+        find
+            .descendant(
+              of: find.byType(ListView).first,
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      for (var i = 0; i < 3; i++) {
+        scroll.position.jumpTo(scroll.position.maxScrollExtent);
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 300));
+      }
     }
 
     Future<void> addBook(
@@ -124,7 +154,16 @@ void main() {
 
     final repository = BookRepository(FirebaseAuth.instance.currentUser!.uid);
     final initial = await repository.watchBooks().first;
-    await tap(find.byType(ExpansionTile));
+    // Only recover this workflow's own renamed sample after an interrupted run.
+    for (final stale in initial.where(
+      (book) =>
+          book.title == 'Dune Revised' &&
+          book.author == 'Frank Herbert' &&
+          book.notes == 'Updated notes, saved in Firestore.',
+    )) {
+      await repository.delete(stale);
+    }
+    await tap(find.byIcon(Icons.add_circle_outline));
     await tap(button('Add book'));
     expect(find.text('Title is required'), findsOneWidget);
     expect(find.text('Please choose a genre'), findsOneWidget);
@@ -159,13 +198,14 @@ void main() {
       await addBook(sample.$1, sample.$2, sample.$3, sample.$4, sample.$5);
       await shot('09-add-success');
     }
-    await tester.ensureVisible(find.byType(ExpansionTile));
-    await tester.pumpAndSettle();
-    await tap(find.byType(ExpansionTile));
+    await tap(find.byIcon(Icons.add_circle_outline));
 
     // Verify duplicate writes do not add a second row.
     final books = await repository.watchBooks().first;
     final dune = books.firstWhere((book) => book.title == 'Dune');
+    if (dune.favorite) {
+      await repository.toggleFavorite(dune);
+    }
     await expectLater(
       repository.save(
         Book(
@@ -182,12 +222,32 @@ void main() {
 
     // Favorite from the real Detail screen, then test filters on live snapshots.
     await listBottom();
+    await until(find.text('Dune'));
+    await shot('09b-add-list');
+    final listScroll = tester.state<ScrollableState>(
+      find
+          .descendant(
+            of: find.byType(ListView).first,
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    listScroll.position.jumpTo(
+      (listScroll.position.maxScrollExtent - 140)
+          .clamp(0, listScroll.position.maxScrollExtent)
+          .toDouble(),
+    );
+    await tester.pumpAndSettle();
+    await shot('18-favorite-before');
     await tap(find.text('Dune'));
     await until(find.text('Detail'));
+    if (find.byTooltip('Remove from favorites').evaluate().isNotEmpty) {
+      await tap(find.byTooltip('Remove from favorites'));
+      await until(find.byTooltip('Add to favorites'));
+    }
     await shot('15-detail-view');
     await tester.ensureVisible(find.byTooltip('Add to favorites'));
     await tester.pumpAndSettle();
-    await shot('18-favorite-before');
     await tap(find.byTooltip('Add to favorites'));
     await until(find.byTooltip('Remove from favorites'));
     await shot('19-favorite-after');
@@ -207,7 +267,14 @@ void main() {
     await shot('13-filter-search');
     await tap(find.text('Clear'));
     await listBottom();
+    listScroll.position.jumpTo(
+      (listScroll.position.maxScrollExtent - 140)
+          .clamp(0, listScroll.position.maxScrollExtent)
+          .toDouble(),
+    );
+    await tester.pumpAndSettle();
     await shot('14-summary');
+    await listBottom();
     await shot('07-list-after-login');
 
     await tap(find.text('Dune'));
@@ -227,12 +294,13 @@ void main() {
       'Updated notes, saved in Firestore.',
     );
     await tap(button('Save'));
-    await until(find.text('Dune Revised'));
+    await until(button('Edit'));
+    expect(find.text('Dune Revised'), findsNWidgets(2));
     await shot('17-detail-after-save');
     await tap(find.text('Delete'));
     await shot('20-delete-confirmation');
     await tap(button('Delete'));
-    await until(find.text('Your private library'));
+    await until(find.text('List'));
     await listBottom();
     expect(find.text('Dune Revised'), findsNothing);
     await shot('21-delete-after');
@@ -247,11 +315,15 @@ void main() {
     // Second account proves data isolation and gives a genuine empty-state image.
     final emptyEmail =
         'empty.${DateTime.now().millisecondsSinceEpoch}@example.com';
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: emptyEmail,
-      password: password,
-    );
-    await until(find.text('Your private library'));
+    await tap(find.text('Register'));
+    await tester.enterText(find.byType(TextFormField).at(0), emptyEmail);
+    await tester.enterText(find.byType(TextFormField).at(1), password);
+    await tester.enterText(find.byType(TextFormField).at(2), password);
+    await tap(button('Register'));
+    await until(find.text('List'));
+    await until(find.text('Registration successful'));
+    await shot('05-register-success');
+    await tester.pump(const Duration(seconds: 11));
     await listBottom();
     await until(find.text('No books found'));
     await shot('22-empty-state');

@@ -31,40 +31,48 @@ class BookRepository {
   Future<String> save(Book book, {Book? previous}) async {
     if (book.userId != userId) throw StateError('Invalid book owner');
     final target = _books.doc(book.id);
-    await _db.runTransaction((transaction) async {
+    // Return domain failures through the platform channel. Throwing a custom
+    // exception inside the Android transaction handler loses its message.
+    final failure = await _db.runTransaction<String?>((transaction) async {
       final existing = await transaction.get(target);
       if (previous == null || previous.id != book.id) {
-        if (existing.exists) throw DuplicateBookException();
+        if (existing.exists) return 'duplicate';
         final data = book.toMap();
         if (previous != null) {
           final old = await transaction.get(_books.doc(previous.id));
-          if (!old.exists) throw StateError('This book no longer exists.');
+          if (!old.exists) return 'missing';
           data['favorite'] = old.data()!['favorite'];
           data['createdAt'] = old.data()!['createdAt'];
           transaction.delete(old.reference);
         }
         transaction.set(target, data);
       } else {
-        if (!existing.exists) throw StateError('This book no longer exists.');
+        if (!existing.exists) return 'missing';
         // Preserve current favorite and createdAt if they changed during editing.
         final data = book.toMap()
           ..['favorite'] = existing.data()!['favorite']
           ..['createdAt'] = existing.data()!['createdAt'];
         transaction.update(target, data);
       }
+      return null;
     });
+    if (failure == 'duplicate') throw DuplicateBookException();
+    if (failure == 'missing') throw StateError('This book no longer exists.');
     return book.id;
   }
 
-  Future<void> toggleFavorite(Book book) =>
-      _db.runTransaction((transaction) async {
-        final ref = _books.doc(book.id);
-        final doc = await transaction.get(ref);
-        if (!doc.exists) throw StateError('This book no longer exists.');
-        transaction.update(ref, {
-          'favorite': !(doc.data()!['favorite'] as bool? ?? false),
-        });
+  Future<void> toggleFavorite(Book book) async {
+    final found = await _db.runTransaction<bool>((transaction) async {
+      final ref = _books.doc(book.id);
+      final doc = await transaction.get(ref);
+      if (!doc.exists) return false;
+      transaction.update(ref, {
+        'favorite': !(doc.data()!['favorite'] as bool? ?? false),
       });
+      return true;
+    });
+    if (!found) throw StateError('This book no longer exists.');
+  }
 
   Future<void> delete(Book book) => _books.doc(book.id).delete();
 }

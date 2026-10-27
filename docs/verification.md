@@ -14,10 +14,16 @@ The first Windows build exposed Kotlin's different-drive incremental-cache error
 (project on D:, Pub cache on C:). The project disables Kotlin incremental
 compilation to keep fresh-copy builds reliable on that layout.
 
-Real-device workflow verification and report screenshots are being collected
-with `integration_test/app_test.dart`. This file will be updated with the actual
-result before final submission. Passing local tests alone does not prove the
-published APK link, the Firebase Console screenshots, or report completeness.
+Android Emulator workflow against the real Firebase project: passed. The test
+created the grader account and five sample books, checked duplicate rejection,
+favorite persistence, every filter/search control, summary, edit validation,
+atomic title rename, confirmed deletion, logout/login persistence, and a separate
+empty account. Four sample books remain in the grader account after deletion.
+
+The separate `integration_test/account_test.dart` also passed: existing accounts
+remain isolated, the deleted title stays absent, and Back on List does not return
+to Login. Screenshots were captured from these actual device sessions and from
+the published Firebase Console, never from mockups.
 
 To capture the real workflow using a dedicated Firebase test account:
 

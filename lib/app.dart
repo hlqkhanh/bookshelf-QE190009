@@ -94,7 +94,10 @@ class _AuthGateState extends State<_AuthGate> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _user != null) {
         messengerKey.currentState?.showSnackBar(
-          const SnackBar(content: Text('Registration successful')),
+          const SnackBar(
+            content: Text('Registration successful'),
+            duration: Duration(seconds: 10),
+          ),
         );
       }
     });

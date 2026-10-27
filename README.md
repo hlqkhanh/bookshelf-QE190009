@@ -1,4 +1,4 @@
-﻿# BookShelf — QE190009
+# BookShelf — QE190009
 
 Hồ Lê Quốc Khánh — PRM393, FALL 2026.
 
@@ -48,6 +48,12 @@ Hai SHA256 được biểu diễn hex chữ thường và tính riêng để tr�
 
 `rating` có thể vắng mặt hoặc null (chưa đánh giá), nếu có giá trị phải là integer 0..5. `notes` có thể vắng mặt hoặc string tối đa 300 ký tự. Rules yêu cầu đúng ownership, id, kiểu dữ liệu, enum, độ dài, timestamp; chặn các field ngoài schema. `createdAt` không đổi sau khi update. Chỉ query theo `userId == uid` được đọc; query toàn collection bị từ chối. Không cần composite index, lọc/sắp xếp thực hiện trên stream riêng của user.
 
+Tạo ID cho một lệnh ghi trực tiếp hợp lệ:
+
+```powershell
+node tools/book-id.mjs USER_UID "Dune" "Frank Herbert"
+```
+
 ## Kiểm thử
 
 ```powershell
@@ -73,7 +79,7 @@ powershell -ExecutionPolicy Bypass -File tools/package-source.ps1 -StudentCode Q
 
 APK: `build/app/outputs/flutter-apk/app-release.apk`. Build release dùng debug signing của template để cài APK cho bài thực hành; nếu phát hành lên cửa hàng cần cấu hình release signing riêng.
 
-Upload APK vào GitHub Releases (tag v1.0), lấy download URL và điền vào báo cáo. Repo phải Public. ZIP ở `submission/QE190009.zip`, `pubspec.yaml` ngay top level, có lockfile và rules. Script dùng allowlist, bỏ cache/build/.git/node_modules/khóa ký/private keys. Báo cáo Word thật ở `submission/QE190009.docx`, tự nhúng ảnh có caption từ danh sách JSON. Không có ảnh thì ghi rõ DRAFT. `report.local.json` chứa mật khẩu test và bị gitignore; chỉ chia sẻ tài khoản test dành cho grader trong báo cáo nộp.
+Upload APK vào GitHub Releases (tag v1.1), lấy download URL và điền vào báo cáo. Repo phải Public. ZIP ở `submission/QE190009.zip`, `pubspec.yaml` ngay top level, có lockfile và rules. Script dùng allowlist, bỏ cache/build/.git/node_modules/khóa ký/private keys. Báo cáo Word thật ở `submission/QE190009.docx`, tự nhúng ảnh có caption từ danh sách JSON. Không có ảnh thì ghi rõ DRAFT. `report.local.json` chứa mật khẩu test và bị gitignore; chỉ chia sẻ tài khoản test dành cho grader trong báo cáo nộp.
 
 Checklist ảnh: `docs/screenshot-checklist.md`. Chụp từ app chạy thật, không dùng mockup. Nên tạo 5 sách ở ít nhất 2 status, test đủ filter, logout/login tài khoản thứ hai và đóng/mở app trước khi nộp.
 
