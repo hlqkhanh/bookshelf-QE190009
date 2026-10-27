@@ -13,7 +13,7 @@ try {
   # Explicit allowlist keeps SDKs, caches, reports and build output out of the archive.
   $files = @('pubspec.yaml','pubspec.lock','analysis_options.yaml','README.md',
     '.gitignore','.metadata','firebase.json','firestore.rules','firestore.indexes.json')
-  foreach ($folder in @('lib','android','assets','test','integration_test','test_driver','tools','rules-tests','docs')) {
+  foreach ($folder in @('lib','android','assets','test','integration_test','test_driver','tools','rules-tests','docs','.github')) {
     $path = Join-Path $project $folder
     if (Test-Path -LiteralPath $path) {
       $files += Get-ChildItem -LiteralPath $path -Recurse -File -Force |

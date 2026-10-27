@@ -153,8 +153,9 @@ void main() {
     for (final sample in samples) {
       if (initial.any(
         (book) => book.title == sample.$1 && book.author == sample.$2,
-      ))
+      )) {
         continue;
+      }
       await addBook(sample.$1, sample.$2, sample.$3, sample.$4, sample.$5);
       await shot('09-add-success');
     }
