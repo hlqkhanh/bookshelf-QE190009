@@ -1,0 +1,12 @@
+﻿{
+    "studentCode":  "QE190009",
+    "fullName":  "Hồ Lê Quốc Khánh",
+    "repositoryUrl":  "https://github.com/REPLACE_OWNER/REPLACE_REPOSITORY",
+    "apkUrl":  "https://github.com/REPLACE_OWNER/REPLACE_REPOSITORY/releases/download/v1.0/app-release.apk",
+    "firebaseProjectId":  "bookshelf-d1ae3",
+    "testEmail":  "REPLACE_TEST_EMAIL",
+    "testPassword":  "REPLACE_TEST_PASSWORD",
+    "screenshots":  [
+
+                    ]
+}
