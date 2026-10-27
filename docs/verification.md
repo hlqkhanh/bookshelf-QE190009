@@ -9,6 +9,10 @@
   fields, duplicate case variants, separate owners, and atomic rename.
 - `flutter build apk --release`: passed with Flutter 3.47.8 / Dart 3.13.7.
 - Firestore rules published to the student's `bookshelf-d1ae3` project.
+- Public release APK v1.1 downloaded without authentication and matched the
+  locally built APK by SHA-256. It installed successfully on Android Emulator.
+  After closing/reopening the release app, the grader session and four books
+  remained available. Installed package: `com.prm393.bookshelf`, version 1.1.0 (2).
 
 The first Windows build exposed Kotlin's different-drive incremental-cache error
 (project on D:, Pub cache on C:). The project disables Kotlin incremental
@@ -34,3 +38,7 @@ flutter drive --driver=test_driver/app_driver.dart --target=integration_test/app
 This test writes to the configured real Firebase project, creates dedicated test
 accounts and sample books, edits/deletes the Dune sample, and saves genuine
 device screenshots in `screenshots/`. Credentials stay in the ignored local JSON.
+
+Flutter drive normally uninstalls the app after testing. Add `--keep-app-running`
+when checking the saved session afterward. The optional `account_test.dart` needs
+an additional `emptyEmail` in the local JSON for an existing empty test account.

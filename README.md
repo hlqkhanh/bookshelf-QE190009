@@ -2,6 +2,8 @@
 
 Hồ Lê Quốc Khánh — PRM393, FALL 2026.
 
+APK đã phát hành: [app-release.apk v1.1](https://github.com/hlqkhanh/bookshelf-QE190009/releases/download/v1.1/app-release.apk).
+
 Ứng dụng Flutter Android dùng Firebase Authentication Email/Password và Cloud Firestore thật. Chỉ collection `books` lưu dữ liệu app. Không có admin SDK hoặc service-account key.
 
 ## Chạy ứng dụng

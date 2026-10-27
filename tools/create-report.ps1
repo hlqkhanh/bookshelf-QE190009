@@ -49,7 +49,7 @@ try {
     } finally { $picture.Dispose() }
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $imagePath, "word/media/image$index.$extension") | Out-Null
     $rels += "<Relationship Id=`"rId$index`" Type=`"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image`" Target=`"media/image$index.$extension`"/>"
-    $body += Paragraph $shot.caption
+    $body += '<w:p><w:pPr><w:keepNext/></w:pPr><w:r><w:t xml:space="preserve">' + (EscapeXml $shot.caption) + '</w:t></w:r></w:p>'
     $body += "<w:p><w:r><w:drawing><wp:inline><wp:extent cx=`"$cx`" cy=`"$cy`"/><wp:docPr id=`"$index`" name=`"Screenshot $index`"/><a:graphic><a:graphicData uri=`"http://schemas.openxmlformats.org/drawingml/2006/picture`"><pic:pic><pic:nvPicPr><pic:cNvPr id=`"$index`" name=`"Screenshot $index`"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=`"rId$index`"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=`"0`" y=`"0`"/><a:ext cx=`"$cx`" cy=`"$cy`"/></a:xfrm><a:prstGeom prst=`"rect`"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>"
     if ($shot.note) { $body += Paragraph $shot.note }
   }
