@@ -22,9 +22,10 @@ try {
   }
   foreach ($relative in $files) {
     $normalized = $relative.Replace('\','/')
-    if ($normalized -match '(^|/)(node_modules|build|\.gradle|\.kotlin|\.dart_tool|\.git|\.firebase)/') { continue }
+    if ($normalized -match '(^|/)(node_modules|build|\.gradle|\.kotlin|\.cxx|\.externalNativeBuild|\.dart_tool|\.git|\.firebase)/') { continue }
     if ($normalized -match '(service.?account|firebase-adminsdk|key\.properties|local\.properties|\.jks$|\.keystore$|debug.*\.log$)') { continue }
     if ($normalized.EndsWith('.iml')) { continue }
+    if ($normalized.EndsWith('GeneratedPluginRegistrant.java')) { continue }
     $source = Join-Path $project $relative
     if (!(Test-Path -LiteralPath $source -PathType Leaf)) {
       if ($relative -in @('pubspec.yaml','pubspec.lock','firestore.rules')) { throw "Missing required file: $relative" }
